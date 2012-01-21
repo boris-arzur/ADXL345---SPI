@@ -1,12 +1,13 @@
-#include "WProgram.h"
-#include "Adxl345.h"
-#include <Wire.h>
 
-#define DEVICE (0x53)    // ADXL345 device address
+#include "Adxl345.h"
+
+
 #define TO_READ (6)      // num of bytes we are going to read each time (two bytes for each axis)
 
-Accelerometer::Accelerometer() {
-
+Accelerometer::Accelerometer(int spiSelectPin) {
+  _selectPin = spiSelectPin;
+  pinMode(_selectPin, OUTPUT);
+  digitalWrite(_selectPin, HIGH);
 }
 
 void Accelerometer::powerOn() {
