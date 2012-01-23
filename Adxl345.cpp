@@ -1,16 +1,20 @@
-#include "WProgram.h"
+
+#include "Arduino.h"
+#include <SPI.h>
 #include "Adxl345.h"
-#include <Wire.h>
 
-#define DEVICE (0x53)    // ADXL345 device address
+
 #define TO_READ (6)      // num of bytes we are going to read each time (two bytes for each axis)
-
-Accelerometer::Accelerometer() {
-
+#define DEVICE 0x00
+Accelerometer::Accelerometer(int spiPin) {
+  _spiPin = spiPin;
+  pinMode(_spiPin,OUTPUT);
+  digitalWrite(_spiPin, HIGH);
 }
 
 void Accelerometer::powerOn() {
-  Wire.begin();        // join i2c bus (address optional for master)
+  SPI.begin();
+  SPI.setDataMode(SPI_MODE3);
   //Turning on the ADXL345
   writeTo(DEVICE, ADXL345_POWER_CTL, 0);      
   writeTo(DEVICE, ADXL345_POWER_CTL, 16);
@@ -30,28 +34,25 @@ void Accelerometer::readAccel(int* x, int* y, int* z) {
 
 // Writes val to address register on device
 void Accelerometer::writeTo(int device, byte address, byte val) {
-  Wire.beginTransmission(device); // start transmission to device 
-  Wire.send(address);             // send register address
-  Wire.send(val);                 // send value to write
-  Wire.endTransmission();         // end transmission
+  digitalWrite(_spiPin, LOW);
+  SPI.transfer(address);             // send register address
+  SPI.transfer(val);                // send value to write
+  digitalWrite(_spiPin, HIGH);
 }
 
 // Reads num bytes starting from address register on device in to _buff array
 void Accelerometer::readFrom(int device, byte address, int num, byte _buff[]) {
-  Wire.beginTransmission(device); // start transmission to device 
-  Wire.send(address);             // sends address to read from
-  Wire.endTransmission();         // end transmission
+  address = 0x80 | address;
+  if (num > 1) address = address | 0x40;
+  
+  digitalWrite(_spiPin, LOW);
+  SPI.transfer(address);             // sends address to read from
 
-    Wire.beginTransmission(device); // start transmission to device
-  Wire.requestFrom(device, num);    // request 6 bytes from device
-
-  int i = 0;
-  while(Wire.available())         // device may send less than requested (abnormal)
+  for(int i = 0; i < num; i++)
   { 
-    _buff[i] = Wire.receive();    // receive a byte
-    i++;
+    _buff[i] = SPI.transfer(0x00);
   }
-  Wire.endTransmission();         // end transmission
+  digitalWrite(_spiPin, HIGH);
 }
 
 // Gets the range setting and return it into rangeSetting

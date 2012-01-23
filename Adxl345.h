@@ -1,5 +1,6 @@
-#include "WProgram.h"
 
+#include "Arduino.h"
+#include <SPI.h>
 #ifndef Accelerometer_h
 #define Accelerometer_h
 
@@ -59,7 +60,7 @@
 class Accelerometer
 {
 public:
-  Accelerometer();
+  Accelerometer(int spiPin);
   void powerOn();
   void readAccel(int* x, int* y, int* z);
 
@@ -146,6 +147,7 @@ public:
   void printAllRegister();
 
 private:
+  int _spiPin;
   void writeTo(int device, byte address, byte val);
   void readFrom(int device, byte address, int num, byte buff[]);
   void setRegisterBit(byte regAdress, int bitPos, bool state);
