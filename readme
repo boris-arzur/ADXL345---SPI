@@ -1,0 +1,1 @@
+This is a library for the AXDL345 accelerometer by Analog Devices using SPI for the arduino. It was originally developed with the intention for use by FRC teams, but should work for others.
