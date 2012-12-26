@@ -5,7 +5,7 @@
 
 Accelerometer::Accelerometer(int spiPin) {
   _spiPin = spiPin;
-  pinMode(_spiPin,OUTPUT);
+  pinMode(_spiPin, OUTPUT);
   digitalWrite(_spiPin, HIGH);
 }
 
