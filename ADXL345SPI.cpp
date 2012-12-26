@@ -3,9 +3,6 @@
 #include <SPI.h>
 #include "ADXL345SPI.h"
 
-
-#define TO_READ (6)      // num of bytes we are going to read each time (two bytes for each axis)
-#define DEVICE 0x00
 Accelerometer::Accelerometer(int spiPin) {
   _spiPin = spiPin;
   pinMode(_spiPin,OUTPUT);
@@ -16,14 +13,14 @@ void Accelerometer::powerOn() {
   SPI.begin();
   SPI.setDataMode(SPI_MODE3);
   //Turning on the ADXL345
-  writeTo(DEVICE, ADXL345_POWER_CTL, 0);      
-  writeTo(DEVICE, ADXL345_POWER_CTL, 16);
-  writeTo(DEVICE, ADXL345_POWER_CTL, 8); 
+  writeTo(ADXL345_POWER_CTL, 0);      
+  writeTo(ADXL345_POWER_CTL, 16);
+  writeTo(ADXL345_POWER_CTL, 8); 
 }
 
 // Reads the acceleration into three variable x, y and z
 void Accelerometer::readAccel(int* x, int* y, int* z) {
-  readFrom(DEVICE, ADXL345_DATAX0, TO_READ, _buff); //read the acceleration data from the ADXL345
+  readFrom(ADXL345_DATAX0, 6, _buff); //read the acceleration data from the ADXL345
 
   // each axis reading comes in 10 bit resolution, ie 2 bytes.  Least Significat Byte first!!
   // thus we are converting both bytes in to one int
@@ -33,7 +30,7 @@ void Accelerometer::readAccel(int* x, int* y, int* z) {
 }
 
 // Writes val to address register on device
-void Accelerometer::writeTo(int device, byte address, byte val) {
+void Accelerometer::writeTo(byte address, byte val) {
   digitalWrite(_spiPin, LOW);
   SPI.transfer(address);             // send register address
   SPI.transfer(val);                // send value to write
@@ -41,7 +38,7 @@ void Accelerometer::writeTo(int device, byte address, byte val) {
 }
 
 // Reads num bytes starting from address register on device in to _buff array
-void Accelerometer::readFrom(int device, byte address, int num, byte _buff[]) {
+void Accelerometer::readFrom(byte address, int num, byte _buff[]) {
   address = 0x80 | address;
   if (num > 1) address = address | 0x40;
   
@@ -59,7 +56,7 @@ void Accelerometer::readFrom(int device, byte address, int num, byte _buff[]) {
 // it can be 2, 4, 8 or 16
 void Accelerometer::getRangeSetting(byte* rangeSetting) {
   byte _b;
-  readFrom(DEVICE, ADXL345_DATA_FORMAT, 1, &_b);
+  readFrom(ADXL345_DATA_FORMAT, 1, &_b);
   *rangeSetting = _b & B00000011;
 }
 
@@ -84,9 +81,9 @@ void Accelerometer::setRangeSetting(int val) {
   default: 
     _s = B00000000;
   }
-  readFrom(DEVICE, ADXL345_DATA_FORMAT, 1, &_b);
+  readFrom(ADXL345_DATA_FORMAT, 1, &_b);
   _s |= (_b & B11101100);
-  writeTo(DEVICE, ADXL345_DATA_FORMAT, _s);
+  writeTo(ADXL345_DATA_FORMAT, _s);
 }
 // gets the state of the SELF_TEST bit
 bool Accelerometer::getSelfTestBit() {
@@ -157,7 +154,7 @@ void Accelerometer::setJustifyBit(bool justifyBit) {
 void Accelerometer::setTapThreshold(int tapThreshold) {
   tapThreshold = min(max(tapThreshold,0),255);
   byte _b = byte (tapThreshold);
-  writeTo(DEVICE, ADXL345_THRESH_TAP, _b);  
+  writeTo(ADXL345_THRESH_TAP, _b);  
 }
 
 // Gets the THRESH_TAP byte value
@@ -165,7 +162,7 @@ void Accelerometer::setTapThreshold(int tapThreshold) {
 // the scale factor is 62.5 mg/LSB
 int Accelerometer::getTapThreshold() {
   byte _b;
-  readFrom(DEVICE, ADXL345_THRESH_TAP, 1, &_b);  
+  readFrom(ADXL345_THRESH_TAP, 1, &_b);  
   return int (_b);
 }
 
@@ -174,19 +171,19 @@ int Accelerometer::getTapThreshold() {
 // a scale factor of 15,6mg/LSB
 // OFSX, OFSY and OFSZ should be comprised between 
 void Accelerometer::setAxisOffset(int x, int y, int z) {
-  writeTo(DEVICE, ADXL345_OFSX, byte (x));  
-  writeTo(DEVICE, ADXL345_OFSY, byte (y));  
-  writeTo(DEVICE, ADXL345_OFSZ, byte (z));  
+  writeTo(ADXL345_OFSX, byte (x));  
+  writeTo(ADXL345_OFSY, byte (y));  
+  writeTo(ADXL345_OFSZ, byte (z));  
 }
 
 // Gets the OFSX, OFSY and OFSZ bytes
 void Accelerometer::getAxisOffset(int* x, int* y, int*z) {
   byte _b;
-  readFrom(DEVICE, ADXL345_OFSX, 1, &_b);  
+  readFrom(ADXL345_OFSX, 1, &_b);  
   *x = int (_b);
-  readFrom(DEVICE, ADXL345_OFSY, 1, &_b);  
+  readFrom(ADXL345_OFSY, 1, &_b);  
   *y = int (_b);
-  readFrom(DEVICE, ADXL345_OFSZ, 1, &_b);  
+  readFrom(ADXL345_OFSZ, 1, &_b);  
   *z = int (_b);
 }
 
@@ -198,13 +195,13 @@ void Accelerometer::getAxisOffset(int* x, int* y, int*z) {
 void Accelerometer::setTapDuration(int tapDuration) {
   tapDuration = min(max(tapDuration,0),255);
   byte _b = byte (tapDuration);
-  writeTo(DEVICE, ADXL345_DUR, _b);  
+  writeTo(ADXL345_DUR, _b);  
 }
 
 // Gets the DUR byte
 int Accelerometer::getTapDuration() {
   byte _b;
-  readFrom(DEVICE, ADXL345_DUR, 1, &_b);  
+  readFrom(ADXL345_DUR, 1, &_b);  
   return int (_b);
 }
 
@@ -215,13 +212,13 @@ int Accelerometer::getTapDuration() {
 // It accepts a maximum value of 255.
 void Accelerometer::setDoubleTapLatency(int doubleTapLatency) {
   byte _b = byte (doubleTapLatency);
-  writeTo(DEVICE, ADXL345_LATENT, _b);  
+  writeTo(ADXL345_LATENT, _b);  
 }
 
 // Gets the Latent value
 int Accelerometer::getDoubleTapLatency() {
   byte _b;
-  readFrom(DEVICE, ADXL345_LATENT, 1, &_b);  
+  readFrom(ADXL345_LATENT, 1, &_b);  
   return int (_b);
 }
 
@@ -232,13 +229,13 @@ int Accelerometer::getDoubleTapLatency() {
 void Accelerometer::setDoubleTapWindow(int doubleTapWindow) {
   doubleTapWindow = min(max(doubleTapWindow,0),255);
   byte _b = byte (doubleTapWindow);
-  writeTo(DEVICE, ADXL345_WINDOW, _b);  
+  writeTo(ADXL345_WINDOW, _b);  
 }
 
 // Gets the Window register
 int Accelerometer::getDoubleTapWindow() {
   byte _b;
-  readFrom(DEVICE, ADXL345_WINDOW, 1, &_b);  
+  readFrom(ADXL345_WINDOW, 1, &_b);  
   return int (_b);
 }
 
@@ -250,13 +247,13 @@ int Accelerometer::getDoubleTapWindow() {
 void Accelerometer::setActivityThreshold(int activityThreshold) {
   activityThreshold = min(max(activityThreshold,0),255);
   byte _b = byte (activityThreshold);
-  writeTo(DEVICE, ADXL345_THRESH_ACT, _b);  
+  writeTo(ADXL345_THRESH_ACT, _b);  
 }
 
 // Gets the THRESH_ACT byte
 int Accelerometer::getActivityThreshold() {
   byte _b;
-  readFrom(DEVICE, ADXL345_THRESH_ACT, 1, &_b);  
+  readFrom(ADXL345_THRESH_ACT, 1, &_b);  
   return int (_b);
 }
 
@@ -268,13 +265,13 @@ int Accelerometer::getActivityThreshold() {
 void Accelerometer::setInactivityThreshold(int inactivityThreshold) {
   inactivityThreshold = min(max(inactivityThreshold,0),255);
   byte _b = byte (inactivityThreshold);
-  writeTo(DEVICE, ADXL345_THRESH_INACT, _b);  
+  writeTo(ADXL345_THRESH_INACT, _b);  
 }
 
 // Gets the THRESH_INACT byte
 int Accelerometer::getInactivityThreshold() {
   byte _b;
-  readFrom(DEVICE, ADXL345_THRESH_INACT, 1, &_b);  
+  readFrom(ADXL345_THRESH_INACT, 1, &_b);  
   return int (_b);
 }
 
@@ -285,13 +282,13 @@ int Accelerometer::getInactivityThreshold() {
 void Accelerometer::setTimeInactivity(int timeInactivity) {
   timeInactivity = min(max(timeInactivity,0),255);
   byte _b = byte (timeInactivity);
-  writeTo(DEVICE, ADXL345_TIME_INACT, _b);  
+  writeTo(ADXL345_TIME_INACT, _b);  
 }
 
 // Gets the TIME_INACT register
 int Accelerometer::getTimeInactivity() {
   byte _b;
-  readFrom(DEVICE, ADXL345_TIME_INACT, 1, &_b);  
+  readFrom(ADXL345_TIME_INACT, 1, &_b);  
   return int (_b);
 }
 
@@ -303,13 +300,13 @@ int Accelerometer::getTimeInactivity() {
 void Accelerometer::setFreeFallThreshold(int freeFallThreshold) {
   freeFallThreshold = min(max(freeFallThreshold,0),255);
   byte _b = byte (freeFallThreshold);
-  writeTo(DEVICE, ADXL345_THRESH_FF, _b);  
+  writeTo(ADXL345_THRESH_FF, _b);  
 }
 
 // Gets the THRESH_FF register.
 int Accelerometer::getFreeFallThreshold() {
   byte _b;
-  readFrom(DEVICE, ADXL345_THRESH_FF, 1, &_b);  
+  readFrom(ADXL345_THRESH_FF, 1, &_b);  
   return int (_b);
 }
 
@@ -320,13 +317,13 @@ int Accelerometer::getFreeFallThreshold() {
 void Accelerometer::setFreeFallDuration(int freeFallDuration) {
   freeFallDuration = min(max(freeFallDuration,0),255);  
   byte _b = byte (freeFallDuration);
-  writeTo(DEVICE, ADXL345_TIME_FF, _b);  
+  writeTo(ADXL345_TIME_FF, _b);  
 }
 
 // Gets the TIME_FF register.
 int Accelerometer::getFreeFallDuration() {
   byte _b;
-  readFrom(DEVICE, ADXL345_TIME_FF, 1, &_b);  
+  readFrom(ADXL345_TIME_FF, 1, &_b);  
   return int (_b);
 }
 
@@ -441,7 +438,7 @@ void Accelerometer::setLowPower(bool state) {
 
 float Accelerometer::getRate(){
   byte _b;
-  readFrom(DEVICE, ADXL345_BW_RATE, 1, &_b);
+  readFrom(ADXL345_BW_RATE, 1, &_b);
   _b &= B00001111;
   return (pow(2,((int) _b)-6)) * 6.25;
 }
@@ -455,15 +452,15 @@ void Accelerometer::setRate(float rate){
     r++;
   }
   if (r <= 9) { 
-    readFrom(DEVICE, ADXL345_BW_RATE, 1, &_b);
+    readFrom(ADXL345_BW_RATE, 1, &_b);
     _s = (byte) (r + 6) | (_b & B11110000);
-    writeTo(DEVICE, ADXL345_BW_RATE, _s);
+    writeTo(ADXL345_BW_RATE, _s);
   }
 }
 
 byte Accelerometer::getInterruptSource() {
   byte _b;
-  readFrom(DEVICE, ADXL345_INT_SOURCE, 1, &_b);
+  readFrom(ADXL345_INT_SOURCE, 1, &_b);
   return _b;
 }
 
@@ -491,19 +488,19 @@ void Accelerometer::setInterrupt(byte interruptBit, bool state) {
 
 void Accelerometer::setRegisterBit(byte regAdress, int bitPos, bool state) {
   byte _b;
-  readFrom(DEVICE, regAdress, 1, &_b);
+  readFrom(regAdress, 1, &_b);
   if (state) {
     _b |= (1 << bitPos);  // forces nth bit of _b to be 1.  all other bits left alone.
   } 
   else {
     _b &= ~(1 << bitPos); // forces nth bit of _b to be 0.  all other bits left alone.
   }
-  writeTo(DEVICE, regAdress, _b);  
+  writeTo(regAdress, _b);  
 }
 
 bool Accelerometer::getRegisterBit(byte regAdress, int bitPos) {
   byte _b;
-  readFrom(DEVICE, regAdress, 1, &_b);
+  readFrom(regAdress, 1, &_b);
   return ((_b >> bitPos) & 1);
 }
 
@@ -512,7 +509,7 @@ bool Accelerometer::getRegisterBit(byte regAdress, int bitPos) {
 void Accelerometer::printAllRegister() {
   byte _b;
   Serial.print("0x00:\t");
-  readFrom(DEVICE, 0x00, 1, &_b);
+  readFrom(0x00, 1, &_b);
   Serial.print(_b, BIN);
   Serial.print("\r\n");
   int i;
@@ -520,7 +517,7 @@ void Accelerometer::printAllRegister() {
     Serial.print("0x");
     Serial.print(i, HEX);
     Serial.print(":\t");
-    readFrom(DEVICE, i, 1, &_b);
+    readFrom(i, 1, &_b);
     Serial.print(_b, BIN);
     Serial.print("\r\n");    
   }

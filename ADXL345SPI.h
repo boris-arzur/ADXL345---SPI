@@ -148,8 +148,8 @@ public:
 
 private:
   int _spiPin;
-  void writeTo(int device, byte address, byte val);
-  void readFrom(int device, byte address, int num, byte buff[]);
+  void writeTo(byte address, byte val);
+  void readFrom(byte address, int num, byte buff[]);
   void setRegisterBit(byte regAdress, int bitPos, bool state);
   bool getRegisterBit(byte regAdress, int bitPos);  
   byte _buff[6] ;    //6 bytes buffer for saving data read from the device
