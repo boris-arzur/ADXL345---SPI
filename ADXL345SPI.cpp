@@ -1,7 +1,7 @@
 
 #include "Arduino.h"
 #include <SPI.h>
-#include "Adxl345.h"
+#include "ADXL345SPI.h"
 
 
 #define TO_READ (6)      // num of bytes we are going to read each time (two bytes for each axis)
