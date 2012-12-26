@@ -9,13 +9,21 @@ Accelerometer::Accelerometer(int spiPin) {
   digitalWrite(_spiPin, HIGH);
 }
 
-void Accelerometer::powerOn() {
+void Accelerometer::powerOn(bool highSpeed) {
   SPI.begin();
   SPI.setDataMode(SPI_MODE3);
+  
+  if (highSpeed)
+    SPI.setClockDivider(SPI_CLOCK_DIV2);
+
   //Turning on the ADXL345
   writeTo(ADXL345_POWER_CTL, 0);      
   writeTo(ADXL345_POWER_CTL, 16);
   writeTo(ADXL345_POWER_CTL, 8); 
+}
+
+void Accelerometer::powerOn() {
+  Accelerometer::powerOn(false);
 }
 
 // Reads the acceleration into three variable x, y and z

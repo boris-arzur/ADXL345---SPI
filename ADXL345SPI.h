@@ -62,6 +62,7 @@ class Accelerometer
 public:
   Accelerometer(int spiPin);
   void powerOn();
+  void powerOn(bool highSpeed);
   void readAccel(int* x, int* y, int* z);
 
   void setTapThreshold(int tapThreshold);
